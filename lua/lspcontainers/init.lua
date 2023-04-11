@@ -189,12 +189,13 @@ local function images_remove(runtime)
   print("lspcontainers: All language servers removed")
 end
 
-local function build_project_image(image_name)
+local function build_project_image()
   local opts =  {
     container_runtime = "docker",
+    image_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
   }
   vim.fn.jobstart(
-    opts.container_runtime.." build -t pyright-"..image_name..":latest .",
+    opts.container_runtime.." build -t pyright-"..opts.image_name..":latest .",
     {
       on_stderr = on_event,
       on_stdout = on_event,
