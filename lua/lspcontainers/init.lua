@@ -140,7 +140,7 @@ local function command(server, user_opts)
   if file_exists("lsp.Dockerfile") then
     local image_name = "lsp-"..vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
     opts = vim.tbl_extend("force", opts, {image=image_name})
-    build_project_image()
+    --build_project_image()
   elseif supported_languages[server] ~= nil then
     opts = vim.tbl_extend("force", opts, supported_languages[server])
   end
