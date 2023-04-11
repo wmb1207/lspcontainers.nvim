@@ -2,10 +2,12 @@ Config = {
   ensure_installed = {}
 }
 
+local image_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
+
 local supported_languages = {
-  bashls = { image = "docker.io/lspcontainers/bash-language-server" },
-  clangd = { image = "docker.io/lspcontainers/clangd-language-server" },
-  dockerls = { image = "docker.io/lspcontainers/docker-language-server" },
+  bashls = { image = image_name.."/bash-language-server" },
+  clangd = { image = image_name.."/clangd-language-server" },
+  dockerls = { image = image_name.."/docker-language-server" },
   gopls = {
     cmd_builder = function (runtime, workdir, image, network)
       local volume = workdir..":"..workdir..":z"
@@ -46,26 +48,26 @@ local supported_languages = {
         image
       }
     end,
-    image = "docker.io/lspcontainers/gopls",
+    image = image_name.."/gopls",
   },
-  graphql = { image = "docker.io/lspcontainers/graphql-language-service-cli" },
-  html = { image = "docker.io/lspcontainers/html-language-server" },
-  intelephense = { image = "docker.io/lspcontainers/intelephense" },
-  jsonls = { image = "docker.io/lspcontainers/json-language-server" },
-  omnisharp = { image = "docker.io/lspcontainers/omnisharp" },
-  powershell_es = { image = "docker.io/lspcontainers/powershell-language-server" },
-  prismals = { image = "docker.io/lspcontainers/prisma-language-server" },
-  pylsp = { image = "docker.io/lspcontainers/python-lsp-server" },
-  pyright = { image = "docker.io/lspcontainers/pyright-langserver" },
-  rust_analyzer = { image = "docker.io/lspcontainers/rust-analyzer" },
-  solargraph = { image = "docker.io/lspcontainers/solargraph" },
-  sumneko_lua = { image = "docker.io/lspcontainers/lua-language-server" },
-  svelte = { image = "docker.io/lspcontainers/svelte-language-server" },
-  tailwindcss= { image = "docker.io/lspcontainers/tailwindcss-language-server" },
-  terraformls = { image = "docker.io/lspcontainers/terraform-ls" },
-  tsserver = { image = "docker.io/lspcontainers/typescript-language-server" },
-  vuels = { image = "docker.io/lspcontainers/vue-language-server" },
-  yamlls = { image = "docker.io/lspcontainers/yaml-language-server" },
+  graphql = { image = image_name.."/graphql-language-service-cli" },
+  html = { image = image_name.."/html-language-server" },
+  intelephense = { image = image_name.."/intelephense" },
+  jsonls = { image = image_name.."/json-language-server" },
+  omnisharp = { image = image_name.."/omnisharp" },
+  powershell_es = { image = image_name.."/powershell-language-server" },
+  prismals = { image = image_name.."/prisma-language-server" },
+  pylsp = { image = image_name.."/python-lsp-server" },
+  pyright = { image = image_name.."/pyright-langserver" },
+  rust_analyzer = { image = image_name.."/rust-analyzer" },
+  solargraph = { image = image_name.."/solargraph" },
+  sumneko_lua = { image = image_name.."/lua-language-server" },
+  svelte = { image = image_name.."/svelte-language-server" },
+  tailwindcss= { image = image_name.."/tailwindcss-language-server" },
+  terraformls = { image = image_name.."/terraform-ls" },
+  tsserver = { image = image_name.."/typescript-language-server" },
+  vuels = { image = image_name.."/vue-language-server" },
+  yamlls = { image = image_name.."/yaml-language-server" },
 }
 
 
@@ -192,14 +194,26 @@ end
 local function build_project_image()
   local container_runtime = "docker"
   local image_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
-  vim.fn.jobstart(
-    container_runtime.." build -t pyright-"..image_name..":latest .",
+  local jobs = {}
+  local job = vim.fn.jobstart(
+    container_runtime.." build -f lsp.Dockerfile -t pyright-"..image_name..":latest .",
     {
       on_stderr = on_event,
       on_stdout = on_event,
       on_exit = on_event,
     }
   )
+  table.insert(jobs, job)
+  local job2 = vim.fn.jobstart(
+    "ls -la",
+    {
+      on_stderr = on_event,
+      on_stdout = on_event,
+      on_exit = on_event,
+    }
+  )
+  table.insert(jobs, job2)
+  local _ = vim.fn.jobwait(jobs)
 end
 
 vim.api.nvim_create_user_command("LspImagesPull", images_pull, {})
