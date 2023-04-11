@@ -68,6 +68,7 @@ local supported_languages = {
   yamlls = { image = "docker.io/lspcontainers/yaml-language-server" },
 }
 
+
 -- default command to run the lsp container
 local default_cmd = function (runtime, workdir, image, network, docker_volume)
   if vim.loop.os_uname().sysname == "Windows_NT" then
@@ -188,8 +189,23 @@ local function images_remove(runtime)
   print("lspcontainers: All language servers removed")
 end
 
+local function build_project_image(image_name)
+  local opts =  {
+    container_runtime = "docker",
+  }
+  vim.fn.jobstart(
+    opts.container_runtime.." build -t pyright-"..image_name..":latest .",
+    {
+      on_stderr = on_event,
+      on_stdout = on_event,
+      on_exit = on_event,
+    }
+  )
+end
+
 vim.api.nvim_create_user_command("LspImagesPull", images_pull, {})
 vim.api.nvim_create_user_command("LspImagesRemove", images_remove, {})
+vim.api.nvim_create_user_command("LspBuildImage", build_project_image, {})
 
 local function setup(options)
   if options['ensure_installed'] then
@@ -202,5 +218,6 @@ return {
   images_pull = images_pull,
   images_remove = images_remove,
   setup = setup,
-  supported_languages = supported_languages
+  supported_languages = supported_languages,
+  build_project_image = build_project_image
 }
