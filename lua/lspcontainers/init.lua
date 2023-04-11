@@ -116,7 +116,7 @@ local function build_project_image()
   local image_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
   local jobs = {}
   local job = vim.fn.jobstart(
-    container_runtime.." build -f lsp.Dockerfile -t lsp-"..image_name..":latest .",
+    container_runtime.." build -f lsp.Dockerfile --load -t lsp-"..image_name..":latest .",
     {
       on_stderr = on_event,
       on_stdout = on_event,
